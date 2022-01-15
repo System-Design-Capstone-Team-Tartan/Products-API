@@ -5,7 +5,10 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "nodemon server/index.js"
+    "start": "nodemon server/index.js",
+    "databuild": "psql -h localhost -U winstonpantelakos productsapi < /Users/winstonpantelakos/Products-API/db/schema.sql",
+    "datapopulate": "node db/index.js"
+
   },
   "repository": {
     "type": "git",
@@ -18,7 +21,8 @@
   },
   "homepage": "https://github.com/System-Design-Capstone-Team-Tartan/Products-API#readme",
   "dependencies": {
-    "express": "^4.17.2"
+    "express": "^4.17.2",
+    "pg": "^8.7.1"
   },
   "devDependencies": {
     "eslint": "^8.6.0",
