@@ -8,21 +8,20 @@ const pool = new Pool({
 const fs = require('fs');
 
 // Skus CSV Handler
-// let portSkus = () => {
-let skusFilename = './server/skus.csv';
 
-let skusReader = fs.createReadStream(skusFilename);
-let skusRl = readline.createInterface({
+const skusFilename = './server/skus.csv';
+
+const skusReader = fs.createReadStream(skusFilename);
+const skusRl = readline.createInterface({
   input: skusReader,
-  crlfdelay: Infinity
+  crlfdelay: Infinity,
 });
-skusRl.on('line', function (line) {
+skusRl.on('line', (line) => {
   handleSkusLine(line);
 });
 let querySkusString = '';
 let countSkus = 0;
 
-let querySkusArray = [];
 let handleSkusLine = (line) => {
   line = line.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
   for (let j = 0; j < line.length; j += 1) {
@@ -33,52 +32,56 @@ let handleSkusLine = (line) => {
       line[j] = line[j].substr(0, line[j].length - 1);
     }
     line[j] = line[j].replaceAll("'", "''");
-
   }
-    // console.log('new skus line:', line);
 
   querySkusString += `('${line[0]}', '${line[1]}', '${line[2]}', '${line[3]}'), `;
   countSkus += 1;
   if (countSkus === 1000) {
-    // querySkusArray.push(querySkusString);
     querySkusString = querySkusString.substring(0, querySkusString.length - 2);
-    // console.log('skusString:', querySkusString);
-    pool.query(`INSERT INTO skus(sku_id, style_id, size, quantity) VALUES ${querySkusString}`, (nextErr, nextResult) => {
-      if (nextErr) {
-        console.error('Error executing query', nextErr.stack);
+
+    pool.query(
+      `INSERT INTO skus(sku_id, style_id, size, quantity) VALUES ${querySkusString}`,
+      (skusErr, skusResult) => {
+        if (skusErr) {
+          console.error('Error executing query', skusErr.stack);
+        }
+        return skusResult;
       }
-    });
+    );
     querySkusString = '';
     countSkus = 0;
   }
 };
 skusRl.on('close', () => {
-  let extraSkusQuery = querySkusString.substring(0, querySkusString.length - 2);
-  pool.query(`INSERT INTO skus(sku_id, style_id, size, quantity) VALUES ${extraSkusQuery}`, (err, result) => {
-    if (err) {
-      console.error('Error executing extra query', err.stack);
-    }
+  const extraSkusQuery = querySkusString.substring(0, querySkusString.length - 2);
+  pool.query(
+    `INSERT INTO skus(sku_id, style_id, size, quantity) VALUES ${extraSkusQuery}`,
+    (err, result) => {
+      if (err) {
+        console.error('Error executing extra query', err.stack);
+      }
 
-    return result;
-  });
+      return result;
+    }
+  );
 });
-// }
+
 // Photo CSV Handler
 
-let photosFilename = './server/photos.csv';
+const photosFilename = './server/photos.csv';
 
-let photosReader = fs.createReadStream(photosFilename);
-let photosRl = readline.createInterface({
+const photosReader = fs.createReadStream(photosFilename);
+const photosRl = readline.createInterface({
   input: photosReader,
-  crlfdelay: Infinity
+  crlfdelay: Infinity,
 });
-photosRl.on('line', function (line) {
+photosRl.on('line', (line) => {
   handlePhotosLine(line);
 });
 let queryPhotosString = '';
 let countPhotos = 0;
 
-let queryPhotosObj = {};
+const queryPhotosObj = {};
 let handlePhotosLine = (line) => {
   line = line.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
   for (let j = 0; j < line.length; j += 1) {
@@ -89,59 +92,64 @@ let handlePhotosLine = (line) => {
       line[j] = line[j].substr(0, line[j].length - 1);
     }
     line[j] = line[j].replaceAll("'", "''");
-
   }
-  // console.log('query obj at zero:', queryPhotosObj[line[0]]);
+
   if (queryPhotosObj[line[0]] === undefined) {
     queryPhotosString += `('${line[0]}', '${line[1]}', '${line[2]}', '${line[3]}'), `;
     countPhotos += 1;
     queryPhotosObj[line[0]] = 1;
   }
 
-
   if (countPhotos === 1000) {
-    queryPhotosString = queryPhotosString.substring(0, queryPhotosString.length - 2);
-    // console.log("queryphotostring:", queryPhotosString);
-    pool.query(`INSERT INTO photos(id, style_id, url, thumbnail_url) VALUES ${queryPhotosString}`, (nextErr, nextResult) => {
-      if (nextErr) {
-        console.error('Error executing first photos query', nextErr.stack);
+    queryPhotosString = queryPhotosString.substring(
+      0,
+      queryPhotosString.length - 2
+    );
+
+    pool.query(
+      `INSERT INTO photos(id, style_id, url, thumbnail_url) VALUES ${queryPhotosString}`,
+      (photoErr, photoResult) => {
+        if (photoErr) {
+          console.error('Error executing first photos query', photoErr.stack);
+        }
+        return photoResult;
       }
-    });
+    );
     queryPhotosString = '';
     countPhotos = 0;
   }
 };
 photosRl.on('close', () => {
-  let extraPhotosQuery = queryPhotosString.substring(0, queryPhotosString.length - 2);
+  const extraPhotosQuery = queryPhotosString.substring(0, queryPhotosString.length - 2);
   if (extraPhotosQuery.length > 0) {
-    pool.query(`INSERT INTO photos(id, style_id, url, thumbnail_url) VALUES ${extraPhotosQuery}`, (err, result) => {
-      if (err) {
-        console.error('Error executing extra photos query', err.stack);
-      }
+    pool.query(
+      `INSERT INTO photos(id, style_id, url, thumbnail_url) VALUES ${extraPhotosQuery}`,
+      (err, result) => {
+        if (err) {
+          console.error('Error executing extra photos query', err.stack);
+        }
 
-      return result;
-    });
+        return result;
+      }
+    );
   }
 });
 
-
 // Styles CSV Handler
 
-let stylesFilename = './server/styles.csv';
+const stylesFilename = './server/styles.csv';
 
-
-let stylesReader = fs.createReadStream(stylesFilename);
-let stylesRl = readline.createInterface({
+const stylesReader = fs.createReadStream(stylesFilename);
+const stylesRl = readline.createInterface({
   input: stylesReader,
-  crlfdelay: Infinity
+  crlfdelay: Infinity,
 });
-stylesRl.on('line', function (line) {
+stylesRl.on('line', (line) => {
   handleStylesLine(line);
 });
 let queryStylesString = '';
 let countStyles = 0;
 
-let queryStylesArray = [];
 let handleStylesLine = (line) => {
   line = line.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
   for (let j = 0; j < line.length; j += 1) {
@@ -161,44 +169,54 @@ let handleStylesLine = (line) => {
   } else {
     line[5] = false;
   }
-  // console.log('new styles line:', line);
+
   queryStylesString += `('${line[0]}', '${line[1]}', '${line[2]}', '${line[3]}', '${line[4]}', '${line[5]}'), `;
   countStyles += 1;
 
   if (countStyles === 1000) {
     queryStylesString = queryStylesString.substring(0, queryStylesString.length - 2);
-    pool.query(`INSERT INTO styles(style_id, product_id, name, sale_price, original_price, defaultstyle) VALUES ${queryStylesString}`, (nextErr, nextResult) => {
-      if (nextErr) {
-        console.error('Error executing styles query', nextErr.stack);
+    pool.query(
+      `INSERT INTO styles(style_id, product_id, name, sale_price, original_price, defaultstyle) VALUES ${queryStylesString}`,
+      (stylesErr, stylesResult) => {
+        if (stylesErr) {
+          console.error("Error executing styles query", stylesErr.stack);
+        }
+        return stylesResult;
       }
-    });
+    );
     queryStylesString = '';
     countStyles = 0;
   }
 };
 skusRl.on('close', () => {
-  let extraStylesQuery = queryStylesString.substring(0, queryStylesString.length - 2);
-  pool.query(`INSERT INTO styles(style_id, product_id, name, sale_price, original_price, defaultstyle) VALUES ${extraStylesQuery}`, (err, result) => {
-    if (err) {
-      console.error('Error executing extra query', err.stack);
-    }
+  const extraStylesQuery = queryStylesString.substring(0, queryStylesString.length - 2);
+  pool.query(
+    `INSERT INTO styles(style_id, product_id, name, sale_price, original_price, defaultstyle) VALUES ${extraStylesQuery}`,
+    (err, result) => {
+      if (err) {
+        console.error('Error executing extra query', err.stack);
+      }
 
-    return result;
-  });
+      return result;
+    }
+  );
 });
 
 // Feature CSV Handler
-let featurePort = () => {
-  let features = [];
-  let values = [];
-  let featuresFilename = './server/features.csv';
+const featurePort = () => {
+  const features = [];
+  const values = [];
+  let productFeaturesString = '';
+  const productFeaturesArray = [];
+  let countProductFeatures = 0;
+  const featuresFilename = './server/features.csv';
 
-  let featuresReader = fs.createReadStream(featuresFilename);
-  let featuresRl = readline.createInterface({
+  const featuresReader = fs.createReadStream(featuresFilename);
+  const featuresRl = readline.createInterface({
     input: featuresReader,
-    crlfdelay: Infinity
+    crlfdelay: Infinity,
   });
-  featuresRl.on('line', function (line) {
+  featuresRl.on('line', (line) => {
     handleFeaturesLine(line);
   });
 
@@ -222,45 +240,79 @@ let featurePort = () => {
     if (values.indexOf(`'${line[3]}', (SELECT feature_id from features WHERE name= '${line[2]}') `) < 0 && line[3] !== 'null') {
       values.push(`'${line[3]}', (SELECT feature_id from features WHERE name= '${line[2]}') `);
     }
+    if (line[3] !== 'null') {
+      productFeaturesString += `('${line[1]}', (SELECT id from values WHERE value='${line[3]}' AND feature_id=(SELECT feature_id from features WHERE name= '${line[2]}')) ), `;
+      countProductFeatures += 1;
+    }
+    if (countProductFeatures === 1000) {
+      productFeaturesArray.push(productFeaturesString);
+      productFeaturesString = '';
+      countProductFeatures = 0;
+    }
   };
   featuresRl.on('close', () => {
-    let featureString = ` ('${features.join("'), ('")}')`;
-    pool.query(`INSERT INTO features(name) VALUES ${featureString}`, (err, result) => {
-      if (err) {
-        console.error('Error executing query', err.stack);
-      }
-      let valueString = ` (${values.join('), (')})`;
-      return pool.query(`INSERT INTO values(value, feature_id) VALUES ${valueString}`, (err, result) => {
+    const featureString = ` ('${features.join("'), ('")}')`;
+    pool.query(
+      `INSERT INTO features(name) VALUES ${featureString}`,
+      (err, result) => {
         if (err) {
           console.error('Error executing query', err.stack);
         }
+        let valueString = ` (${values.join("), (")})`;
+        return pool.query(
+          `INSERT INTO values(value, feature_id) VALUES ${valueString}`,
+          (err, result) => {
+            if (err) {
+              console.error('Error executing query', err.stack);
+            }
+            for (let f = 0; f < productFeaturesArray.length; f += 1) {
+              let productFeaturesQuery = productFeaturesArray[f].substring(0, productFeaturesArray[f].length - 2);
+              pool.query(
+                `INSERT INTO product_features(product_id, value_id) VALUES ${productFeaturesQuery}`,
+                (err, result) => {
+                  if (err) {
+                    console.error('Error executing product features query', err.stack);
+                  }
 
-        return result;
-      });
-    });
+                  return result;
+                }
+              );
+            }
+            const extraProductFeaturesQuery = productFeaturesString.substring(0, productFeaturesString.length - 2);
+            pool.query(
+              `INSERT INTO product_features(product_id, value_id) VALUES ${extraProductFeaturesQuery}`,
+              (err, result) => {
+                if (err) {
+                  console.error('Error executing extra product features query', err.stack);
+                }
+
+                return result;
+              }
+            );
+            return result;
+          }
+        );
+      }
+    );
   });
 };
 
 // // Product CSV Handler
-let categories = [];
-let products = [];
-let productFilename = './server/product.csv';
+const categories = [];
+const productFilename = './server/product.csv';
 
-// Use fs.createReadStream() method
-// to read the file
-
-let productReader = fs.createReadStream(productFilename);
-let productRl = readline.createInterface({
+const productReader = fs.createReadStream(productFilename);
+const productRl = readline.createInterface({
   input: productReader,
-  crlfdelay: Infinity
+  crlfdelay: Infinity,
 });
-productRl.on('line', function (line) {
+productRl.on('line', (line) => {
   handleProductLine(line);
 });
 let queryProductString = '';
 let countProduct = 0;
 
-let queryProductArray = [];
+const queryProductArray = [];
 let handleProductLine = (line) => {
   line = line.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
   for (let j = 0; j < line.length; j += 1) {
@@ -272,7 +324,7 @@ let handleProductLine = (line) => {
     }
     line[j] = line[j].replaceAll("'", "''");
   }
-    // console.log('new product line:', line);
+
   if (categories.indexOf(line[4]) < 0) {
     categories.push(line[4]);
   }
@@ -285,35 +337,44 @@ let handleProductLine = (line) => {
   }
 };
 productRl.on('close', () => {
-  let categoryString = ` ('${categories.join("'), ('")}')`;
-  // console.log('category string:', categoryString);
-  pool.query(`INSERT INTO categories(category_name) VALUES ${categoryString}`, (err, result) => {
-    if (err) {
-      console.error('Error executing query', err.stack);
-    }
+  const categoryString = ` ('${categories.join("'), ('")}')`;
 
-    for (var i = 0; i < queryProductArray.length; i += 1) {
-      let productString = queryProductArray[i].substring(0, queryProductArray[i].length - 2)
-      // console.log('productString:', productString);
-      pool.query(`INSERT INTO products(id, name, slogan, description, category_id, default_price) VALUES ${productString}`, (nextErr, nextResult) => {
-        if (nextErr) {
-          console.error('Error executing query', nextErr.stack);
-        }
-      });
-    }
-    let extraProductQuery = queryProductString.substring(0, queryProductString.length - 2);
-    pool.query(`INSERT INTO products(id, name, slogan, description, category_id, default_price) VALUES ${extraProductQuery}`, (err, result) => {
+  pool.query(
+    `INSERT INTO categories(category_name) VALUES ${categoryString}`,
+    (err, result) => {
       if (err) {
-        console.error('Error executing extra query', err.stack);
+        console.error('Error executing query', err.stack);
       }
-      featurePort();
-      return result;
-    });
-  });
+
+      for (let i = 0; i < queryProductArray.length; i += 1) {
+        const productString = queryProductArray[i].substring(0, queryProductArray[i].length - 2);
+        pool.query(
+          `INSERT INTO products(id, name, slogan, description, category_id, default_price) VALUES ${productString}`,
+          (productErr, productResult) => {
+            if (productErr) {
+              console.error('Error executing query', productErr.stack);
+            }
+            return productResult;
+          }
+        );
+      }
+      const extraProductQuery = queryProductString.substring(0, queryProductString.length - 2);
+      pool.query(
+        `INSERT INTO products(id, name, slogan, description, category_id, default_price) VALUES ${extraProductQuery}`,
+        (err, result) => {
+          if (err) {
+            console.error('Error executing extra query', err.stack);
+          }
+          featurePort();
+          return result;
+        }
+      );
+    }
+  );
 });
 
 // Related CSV Handler
-let relatedFilename = './server/related.csv';
+let relatedFilename = "./server/related.csv";
 
 // Use fs.createReadStream() method
 // to read the file
@@ -321,12 +382,12 @@ let relatedFilename = './server/related.csv';
 let relatedReader = fs.createReadStream(relatedFilename);
 let relatedRl = readline.createInterface({
   input: relatedReader,
-  crlfdelay: Infinity
+  crlfdelay: Infinity,
 });
-relatedRl.on('line', function (line) {
+relatedRl.on("line", function (line) {
   handleRelatedLine(line);
 });
-let queryRelatedString = '';
+let queryRelatedString = "";
 let countRelated = 0;
 
 let queryRelatedArray = [];
@@ -346,23 +407,28 @@ let handleRelatedLine = (line) => {
     // querySkusArray.push(querySkusString);
     queryRelatedString = queryRelatedString.substring(0, queryRelatedString.length - 2);
     // console.log('skusString:', querySkusString);
-    pool.query(`INSERT INTO related(current_product_id, related_product_id) VALUES ${queryRelatedString}`, (nextErr, nextResult) => {
-      if (nextErr) {
-        console.error('Error executing query', nextErr.stack);
+    pool.query(
+      `INSERT INTO related(current_product_id, related_product_id) VALUES ${queryRelatedString}`,
+      (nextErr, nextResult) => {
+        if (nextErr) {
+          console.error("Error executing query", nextErr.stack);
+        }
       }
-    });
-    queryRelatedString = '';
+    );
+    queryRelatedString = "";
     countRelated = 0;
   }
 };
 relatedRl.on('close', () => {
-  let extraRelatedQuery = queryRelatedString.substring(0, queryRelatedString.length - 2);
-  pool.query(`INSERT INTO related(current_product_id, related_product_id) VALUES ${extraRelatedQuery}`, (err, result) => {
-    if (err) {
-      console.error('Error executing extra query', err.stack);
+  const extraRelatedQuery = queryRelatedString.substring(0, queryRelatedString.length - 2);
+  pool.query(
+    `INSERT INTO related(current_product_id, related_product_id) VALUES ${extraRelatedQuery}`,
+    (err, result) => {
+      if (err) {
+        console.error('Error executing extra query', err.stack);
+      }
+
+      return result;
     }
-
-    return result;
-  });
+  );
 });
-
