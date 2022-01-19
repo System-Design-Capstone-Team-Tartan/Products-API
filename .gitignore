@@ -1,1 +1,21 @@
 node_modules/
+/server/features.csv
+/server/photos.csv
+/server/product.csv
+/server/related.csv
+/server/styles.csv
+/server/skus.csv
+# related
+server/related
+
+# features
+server/features
+
+# products
+server/product
+
+# styles
+server/styles
+
+# photos
+server/photos
