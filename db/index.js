@@ -230,18 +230,18 @@ const featurePort = () => {
         line[j] = line[j].substr(0, line[j].length - 1);
       }
       if (line.length === 3) {
-        line.push('null');
+        line.push("null");
       }
     }
 
     if (features.indexOf(line[2]) < 0) {
       features.push(line[2]);
     }
-    if (values.indexOf(`'${line[3]}', (SELECT feature_id from features WHERE name= '${line[2]}') `) < 0 && line[3] !== 'null') {
-      values.push(`'${line[3]}', (SELECT feature_id from features WHERE name= '${line[2]}') `);
+    if (values.indexOf(`'${line[3]}', (SELECT feature_id from features WHERE feature= '${line[2]}') `) < 0 && line[3] !== 'null') {
+      values.push(`'${line[3]}', (SELECT feature_id from features WHERE feature= '${line[2]}') `);
     }
     if (line[3] !== 'null') {
-      productFeaturesString += `('${line[1]}', (SELECT id from values WHERE value='${line[3]}' AND feature_id=(SELECT feature_id from features WHERE name= '${line[2]}')) ), `;
+      productFeaturesString += `('${line[1]}', (SELECT id from values WHERE value='${line[3]}' AND feature_id=(SELECT feature_id from features WHERE feature= '${line[2]}')) ), `;
       countProductFeatures += 1;
     }
     if (countProductFeatures === 1000) {
@@ -253,7 +253,7 @@ const featurePort = () => {
   featuresRl.on('close', () => {
     const featureString = ` ('${features.join("'), ('")}')`;
     pool.query(
-      `INSERT INTO features(name) VALUES ${featureString}`,
+      `INSERT INTO features(feature) VALUES ${featureString}`,
       (err, result) => {
         if (err) {
           console.error('Error executing query', err.stack);
@@ -328,7 +328,7 @@ let handleProductLine = (line) => {
   if (categories.indexOf(line[4]) < 0) {
     categories.push(line[4]);
   }
-  queryProductString += `('${line[0]}', '${line[1]}', '${line[2]}', '${line[3]}', (SELECT id from categories WHERE category_name= '${line[4]}'), '${line[5]}'), `;
+  queryProductString += `('${line[0]}', '${line[1]}', '${line[2]}', '${line[3]}','${line[4]}', '${line[5]}'), `;
   countProduct += 1;
   if (countProduct === 1000) {
     queryProductArray.push(queryProductString);
@@ -349,7 +349,7 @@ productRl.on('close', () => {
       for (let i = 0; i < queryProductArray.length; i += 1) {
         const productString = queryProductArray[i].substring(0, queryProductArray[i].length - 2);
         pool.query(
-          `INSERT INTO products(id, name, slogan, description, category_id, default_price) VALUES ${productString}`,
+          `INSERT INTO products(id, name, slogan, description, category, default_price) VALUES ${productString}`,
           (productErr, productResult) => {
             if (productErr) {
               console.error('Error executing query', productErr.stack);
@@ -360,7 +360,7 @@ productRl.on('close', () => {
       }
       const extraProductQuery = queryProductString.substring(0, queryProductString.length - 2);
       pool.query(
-        `INSERT INTO products(id, name, slogan, description, category_id, default_price) VALUES ${extraProductQuery}`,
+        `INSERT INTO products(id, name, slogan, description, category, default_price) VALUES ${extraProductQuery}`,
         (err, result) => {
           if (err) {
             console.error('Error executing extra query', err.stack);
@@ -374,23 +374,19 @@ productRl.on('close', () => {
 });
 
 // Related CSV Handler
-let relatedFilename = "./server/related.csv";
+const relatedFilename = './server/related.csv';
 
-// Use fs.createReadStream() method
-// to read the file
-
-let relatedReader = fs.createReadStream(relatedFilename);
-let relatedRl = readline.createInterface({
+const relatedReader = fs.createReadStream(relatedFilename);
+const relatedRl = readline.createInterface({
   input: relatedReader,
   crlfdelay: Infinity,
 });
-relatedRl.on("line", function (line) {
+relatedRl.on('line', (line) => {
   handleRelatedLine(line);
 });
-let queryRelatedString = "";
+let queryRelatedString = '';
 let countRelated = 0;
 
-let queryRelatedArray = [];
 let handleRelatedLine = (line) => {
   line = line.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
   for (let j = 0; j < line.length; j += 1) {
@@ -404,18 +400,18 @@ let handleRelatedLine = (line) => {
   queryRelatedString += `('${line[1]}', '${line[2]}'), `;
   countRelated += 1;
   if (countRelated === 1000) {
-    // querySkusArray.push(querySkusString);
     queryRelatedString = queryRelatedString.substring(0, queryRelatedString.length - 2);
-    // console.log('skusString:', querySkusString);
+
     pool.query(
       `INSERT INTO related(current_product_id, related_product_id) VALUES ${queryRelatedString}`,
-      (nextErr, nextResult) => {
-        if (nextErr) {
-          console.error("Error executing query", nextErr.stack);
+      (relatedErr, relatedResult) => {
+        if (relatedErr) {
+          console.error('Error executing query', relatedErr.stack);
         }
+        return relatedResult;
       }
     );
-    queryRelatedString = "";
+    queryRelatedString = '';
     countRelated = 0;
   }
 };
@@ -432,3 +428,5 @@ relatedRl.on('close', () => {
     }
   );
 });
+
+module.exports = pool;

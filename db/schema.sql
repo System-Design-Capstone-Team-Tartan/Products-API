@@ -7,7 +7,7 @@ CREATE DATABASE productsapi;
 DROP TABLE IF EXISTS features CASCADE;
 CREATE TABLE IF NOT EXISTS features (
 	feature_id serial PRIMARY KEY NOT NULL,
-	name VARCHAR ( 50 ) UNIQUE NOT NULL
+	feature VARCHAR ( 50 ) UNIQUE NOT NULL
 );
 
 DROP TABLE IF EXISTS values CASCADE;
@@ -33,11 +33,9 @@ CREATE TABLE IF NOT EXISTS products (
   name VARCHAR ( 50 )  NOT NULL,
   slogan VARCHAR ( 1000 )  NOT NULL,
   description VARCHAR ( 1000 )  NOT NULL,
-  category_id INT NOT NULL,
+  category VARCHAR ( 50 ) NOT NULL,
   default_price VARCHAR ( 50 )  NOT NULL,
-  PRIMARY KEY (id),
-  FOREIGN KEY (category_id)
-	  REFERENCES categories (id)
+  PRIMARY KEY (id)
 );
 
 DROP TABLE IF EXISTS product_features CASCADE;
