@@ -8,7 +8,6 @@
     "start": "nodemon server/index.js",
     "databuild": "psql -h localhost -U winstonpantelakos productsapi < /Users/winstonpantelakos/Products-API/db/schema.sql",
     "datapopulate": "node db/index.js"
-
   },
   "repository": {
     "type": "git",
@@ -21,7 +20,9 @@
   },
   "homepage": "https://github.com/System-Design-Capstone-Team-Tartan/Products-API#readme",
   "dependencies": {
+    "cors": "^2.8.5",
     "express": "^4.17.2",
+    "morgan": "^1.10.0",
     "pg": "^8.7.1"
   },
   "devDependencies": {
