@@ -3,13 +3,7 @@ const readline = require('readline');
 // pools will use environment variables
 // for connection information
 const pool = new Pool({
-  // host: 'ec2-34-207-111-129.compute-1.amazonaws.com',
-  // user: 'winston',
   database: 'productsapi',
-  // password: 'winston',
-  // port: 5432,
-  // idleTimeoutMillis: 0,
-  // connectionTimeoutMillis: 0,
 });
 const fs = require('fs');
 
