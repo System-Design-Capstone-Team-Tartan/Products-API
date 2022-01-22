@@ -3,7 +3,13 @@ const readline = require('readline');
 // pools will use environment variables
 // for connection information
 const pool = new Pool({
+  // host: 'ec2-34-207-111-129.compute-1.amazonaws.com',
+  // user: 'winston',
   database: 'productsapi',
+  // password: 'winston',
+  // port: 5432,
+  // idleTimeoutMillis: 0,
+  // connectionTimeoutMillis: 0,
 });
 const fs = require('fs');
 
@@ -31,7 +37,7 @@ let handleSkusLine = (line) => {
     if (line[j][line[j].length - 1] === '"') {
       line[j] = line[j].substr(0, line[j].length - 1);
     }
-    line[j] = line[j].replaceAll("'", "''");
+    line[j] = line[j].replace(/'/g, "''");
   }
 
   querySkusString += `('${line[0]}', '${line[1]}', '${line[2]}', '${line[3]}'), `;
@@ -91,7 +97,7 @@ let handlePhotosLine = (line) => {
     if (line[j][line[j].length - 1] === '"') {
       line[j] = line[j].substr(0, line[j].length - 1);
     }
-    line[j] = line[j].replaceAll("'", "''");
+    line[j] = line[j].replace(/'/g, "''");
   }
 
   if (queryPhotosObj[line[0]] === undefined) {
@@ -159,7 +165,7 @@ let handleStylesLine = (line) => {
     if (line[j][line[j].length - 1] === '"') {
       line[j] = line[j].substr(0, line[j].length - 1);
     }
-    line[j] = line[j].replaceAll("'", "''");
+    line[j] = line[j].replace(/'/g, "''");
     if (line[j] === null) {
       line[j] = 'null';
     }
@@ -322,7 +328,7 @@ let handleProductLine = (line) => {
     if (line[j][line[j].length - 1] === '"') {
       line[j] = line[j].substr(0, line[j].length - 1);
     }
-    line[j] = line[j].replaceAll("'", "''");
+    line[j] = line[j].replace(/'/g, "''");
   }
 
   if (categories.indexOf(line[4]) < 0) {

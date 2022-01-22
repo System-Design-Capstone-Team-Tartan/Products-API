@@ -21,6 +21,7 @@ CREATE TABLE IF NOT EXISTS values (
 
 
 
+
 DROP TABLE IF EXISTS categories CASCADE;
 CREATE TABLE IF NOT EXISTS categories (
 	id serial PRIMARY KEY NOT NULL,
@@ -37,12 +38,17 @@ CREATE TABLE IF NOT EXISTS products (
   default_price VARCHAR ( 50 )  NOT NULL,
   PRIMARY KEY (id)
 );
+CREATE INDEX idx_products
+ON products(id);
+
 
 DROP TABLE IF EXISTS product_features CASCADE;
 CREATE TABLE IF NOT EXISTS product_features (
 	product_id INT NOT NULL REFERENCES products (id),
   value_id INT NOT NULL REFERENCES values (id)
 );
+CREATE INDEX idx_product
+ON product_features(product_id);
 
 DROP TABLE IF EXISTS styles CASCADE;
 CREATE TABLE IF NOT EXISTS styles (
@@ -54,6 +60,8 @@ CREATE TABLE IF NOT EXISTS styles (
   defaultstyle boolean NOT NULL,
   PRIMARY KEY (style_id)
 );
+CREATE INDEX idx_styles
+ON styles(product_id);
 
 
 DROP TABLE IF EXISTS photos CASCADE;
@@ -64,6 +72,9 @@ CREATE TABLE IF NOT EXISTS photos (
   thumbnail_url TEXT NOT NULL
 
 );
+CREATE INDEX idx_photos
+ON photos(style_id);
+
 
 DROP TABLE IF EXISTS skus CASCADE;
 CREATE TABLE IF NOT EXISTS skus (
@@ -73,8 +84,14 @@ CREATE TABLE IF NOT EXISTS skus (
   quantity INT NOT NULL
 
 );
+
+CREATE INDEX idx_skus
+ON skus(style_id);
+
 DROP TABLE IF EXISTS related CASCADE;
 CREATE TABLE IF NOT EXISTS related (
   current_product_id INT  NOT NULL,
   related_product_id INT NOT NULL
 );
+CREATE INDEX idx_related
+ON related(current_product_id);

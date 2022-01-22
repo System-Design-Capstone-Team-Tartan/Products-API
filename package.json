@@ -7,7 +7,8 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "nodemon server/index.js",
     "databuild": "psql -h localhost -U winstonpantelakos productsapi < /Users/winstonpantelakos/Products-API/db/schema.sql",
-    "datapopulate": "node db/index.js"
+    "datapopulate": "node db/index.js",
+    "ubuntubuild": "psql -h localhost -U winston productsapi < ~/productapitest/Products-API/db/schema.sql"
   },
   "repository": {
     "type": "git",
