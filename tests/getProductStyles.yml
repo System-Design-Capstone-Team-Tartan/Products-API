@@ -1,0 +1,9 @@
+config:
+  target: "http://localhost:3040"
+  phases:
+    - duration: 15
+      arrivalRate: 500
+scenarios:
+  - flow:
+    - get:
+        url: "/products/37311/styles"

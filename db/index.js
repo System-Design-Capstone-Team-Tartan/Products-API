@@ -31,7 +31,7 @@ let handleSkusLine = (line) => {
     if (line[j][line[j].length - 1] === '"') {
       line[j] = line[j].substr(0, line[j].length - 1);
     }
-    line[j] = line[j].replaceAll("'", "''");
+    line[j] = line[j].replace(/'/g, "''");
   }
 
   querySkusString += `('${line[0]}', '${line[1]}', '${line[2]}', '${line[3]}'), `;
@@ -91,7 +91,7 @@ let handlePhotosLine = (line) => {
     if (line[j][line[j].length - 1] === '"') {
       line[j] = line[j].substr(0, line[j].length - 1);
     }
-    line[j] = line[j].replaceAll("'", "''");
+    line[j] = line[j].replace(/'/g, "''");
   }
 
   if (queryPhotosObj[line[0]] === undefined) {
@@ -159,7 +159,7 @@ let handleStylesLine = (line) => {
     if (line[j][line[j].length - 1] === '"') {
       line[j] = line[j].substr(0, line[j].length - 1);
     }
-    line[j] = line[j].replaceAll("'", "''");
+    line[j] = line[j].replace(/'/g, "''");
     if (line[j] === null) {
       line[j] = 'null';
     }
@@ -322,7 +322,7 @@ let handleProductLine = (line) => {
     if (line[j][line[j].length - 1] === '"') {
       line[j] = line[j].substr(0, line[j].length - 1);
     }
-    line[j] = line[j].replaceAll("'", "''");
+    line[j] = line[j].replace(/'/g, "''");
   }
 
   if (categories.indexOf(line[4]) < 0) {
